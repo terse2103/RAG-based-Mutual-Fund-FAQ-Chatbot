@@ -1,0 +1,1639 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Nippon India Mutual Fund Assistant — INDmoney</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    /* ─── Reset ─────────────────────────────────────────── */
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html,
+    body {
+      height: 100%;
+      font-family: 'Inter', system-ui, sans-serif;
+      font-size: 14px;
+      color: #1a1a1a;
+      background: #f5f6fa;
+    }
+
+    /* ─── Top Navigation Bar (INDmoney-style dark nav) ──── */
+    .top-nav {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: #1b2132;
+      padding: 0 24px;
+      height: 52px;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    .nav-left {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .logo-badge {
+      background: #fff;
+      color: #1b2132;
+      font-weight: 800;
+      font-size: 10px;
+      padding: 3px 6px;
+      border-radius: 4px;
+      letter-spacing: .5px;
+    }
+
+    .nav-brand {
+      color: #fff;
+      font-weight: 700;
+      font-size: 15px;
+    }
+
+    .nav-links {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin-left: 32px;
+    }
+
+    .nav-link {
+      color: #9ca3af;
+      font-size: 13px;
+      font-weight: 500;
+      padding: 6px 12px;
+      border-radius: 6px;
+      text-decoration: none;
+      transition: all .15s;
+    }
+
+    .nav-link:hover {
+      color: #fff;
+      background: rgba(255, 255, 255, .08);
+    }
+
+    .nav-link.active {
+      color: #fff;
+    }
+
+    .nav-right {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .status-badge {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 5px 12px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 500;
+      border: 1px solid;
+    }
+
+    .status-badge.online {
+      color: #16c96f;
+      border-color: rgba(22, 201, 111, .3);
+      background: rgba(22, 201, 111, .08);
+    }
+
+    .status-badge.offline {
+      color: #f87171;
+      border-color: rgba(248, 113, 113, .3);
+      background: rgba(248, 113, 113, .08);
+    }
+
+    .status-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      animation: blink 2s infinite;
+    }
+
+    .status-dot.online {
+      background: #16c96f;
+    }
+
+    .status-dot.offline {
+      background: #f87171;
+    }
+
+    @keyframes blink {
+
+      0%,
+      100% {
+        opacity: 1;
+      }
+
+      50% {
+        opacity: .4;
+      }
+    }
+
+    /* ─── Sub-nav tabs (Fund Price | Performance | etc.) ── */
+    .sub-nav {
+      background: #fff;
+      border-bottom: 1px solid #e5e7eb;
+      padding: 0 24px;
+    }
+
+    .sub-nav-inner {
+      display: flex;
+      gap: 0;
+      overflow-x: auto;
+    }
+
+    .tab-btn {
+      padding: 13px 18px;
+      font-size: 13px;
+      font-weight: 500;
+      color: #6b7280;
+      background: none;
+      border: none;
+      border-bottom: 2px solid transparent;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: all .15s;
+    }
+
+    .tab-btn:hover {
+      color: #1a1a1a;
+    }
+
+    .tab-btn.active {
+      color: #1d6be5;
+      border-bottom-color: #1d6be5;
+      font-weight: 600;
+    }
+
+    /* ─── Breadcrumb ─────────────────────────────────────── */
+    .breadcrumb {
+      padding: 10px 24px;
+      font-size: 12px;
+      color: #9ca3af;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      background: #fff;
+      border-bottom: 1px solid #e5e7eb;
+    }
+
+    .breadcrumb a {
+      color: #6b7280;
+      text-decoration: none;
+    }
+
+    .breadcrumb a:hover {
+      color: #1d6be5;
+    }
+
+    .breadcrumb .sep {
+      color: #d1d5db;
+    }
+
+    .breadcrumb .current {
+      color: #1a1a1a;
+      font-weight: 500;
+    }
+
+    /* ─── Main layout ────────────────────────────────────── */
+    .main-layout {
+      display: flex;
+      gap: 0;
+      min-height: calc(100vh - 104px);
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+
+    /* ─── Collapsible Sidebar ────────────────────────── */
+    .sidebar {
+      width: 260px;
+      min-width: 260px;
+      background: #fff;
+      border-right: 1px solid #e5e7eb;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .sidebar.collapsed {
+      width: 0;
+      min-width: 0;
+      padding: 0;
+      border: none;
+    }
+
+    .sidebar-toggle-btn {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      background: #f3f4f6;
+      border: 1px solid #e5e7eb;
+      border-radius: 4px;
+      padding: 4px 8px;
+      cursor: pointer;
+      z-index: 10;
+      font-size: 12px;
+      color: #6b7280;
+    }
+
+    .sidebar-toggle-btn:hover {
+      background: #e5e7eb;
+    }
+
+    .restore-sidebar-btn {
+      display: none;
+      position: fixed;
+      left: 0;
+      top: 160px;
+      z-index: 999;
+      background: #1d6be5;
+      color: #fff;
+      border: none;
+      border-radius: 0 4px 4px 0;
+      padding: 10px 12px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      box-shadow: 2px 0 8px rgba(29, 107, 229, 0.3);
+      transition: all 0.2s;
+    }
+
+    .restore-sidebar-btn:hover {
+      background: #1a5bbd;
+      padding-left: 16px;
+    }
+
+    .restore-sidebar-btn.visible {
+      display: flex;
+    }
+
+    /* ─── Sidebar Components ────────────────────────── */
+    .filter-btns {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-bottom: 12px;
+    }
+
+    .filter-btn {
+      flex: 1;
+      padding: 6px;
+      border: 1px solid #e5e7eb;
+      border-radius: 6px;
+      background: #f9fafb;
+      font-size: 11px;
+      font-weight: 600;
+      color: #6b7280;
+      cursor: pointer;
+      transition: all 0.15s;
+      text-align: center;
+    }
+
+    .filter-btn.active {
+      background: #eff6ff;
+      border-color: #1d6be5;
+      color: #1d6be5;
+    }
+
+    .filter-btn:hover:not(.active) {
+      background: #f3f4f6;
+      color: #374151;
+    }
+
+    .refresh-btn {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid #d1d5db;
+      border-radius: 6px;
+      background: #fff;
+      font-size: 12px;
+      font-weight: 600;
+      color: #374151;
+      cursor: pointer;
+      transition: all 0.15s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+    }
+
+    .refresh-btn:hover {
+      background: #f9fafb;
+      border-color: #9ca3af;
+    }
+
+    .refresh-status {
+      font-size: 11px;
+      color: #16a34a;
+      text-align: center;
+      margin-top: 4px;
+      height: 16px;
+      font-weight: 500;
+    }
+
+    .last-updated-label {
+      font-size: 11px;
+      color: #6b7280;
+      text-align: center;
+      margin-top: 6px;
+      line-height: 1.4;
+    }
+
+    .last-updated-label span {
+      color: #374151;
+      font-weight: 500;
+    }
+
+    /* ─── Sidebar ────────────────────────────────────────── */
+    .sidebar-section-title {
+      font-size: 11px;
+      font-weight: 600;
+      color: #9ca3af;
+      text-transform: uppercase;
+      letter-spacing: .8px;
+      margin-bottom: 8px;
+    }
+
+    .fund-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      padding: 10px;
+      border-radius: 8px;
+      cursor: pointer;
+      border: 1px solid transparent;
+      transition: all .15s;
+      margin-bottom: 4px;
+    }
+
+    .fund-item:hover {
+      background: #f0f7ff;
+      border-color: #bfdbfe;
+    }
+
+    .fund-item.selected {
+      background: #eff6ff;
+      border-color: #1d6be5;
+    }
+
+    .fund-radio {
+      width: 16px;
+      height: 16px;
+      margin-top: 1px;
+      border: 2px solid #d1d5db;
+      border-radius: 50%;
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all .15s;
+    }
+
+    .fund-item.selected .fund-radio {
+      border-color: #1d6be5;
+      background: #1d6be5;
+    }
+
+    .fund-item.selected .fund-radio::after {
+      content: '';
+      width: 5px;
+      height: 5px;
+      background: #fff;
+      border-radius: 50%;
+    }
+
+    .fund-item-name {
+      font-size: 12px;
+      font-weight: 500;
+      color: #374151;
+      line-height: 1.4;
+    }
+
+    .fund-item-cat {
+      font-size: 10px;
+      color: #6b7280;
+      margin-top: 2px;
+      background: #f3f4f6;
+      padding: 1px 7px;
+      border-radius: 999px;
+      display: inline-block;
+    }
+
+    .fund-item.selected .fund-item-name {
+      color: #1d6be5;
+    }
+
+    .scope-select {
+      width: 100%;
+      padding: 8px 10px;
+      border: 1px solid #d1d5db;
+      border-radius: 6px;
+      font-size: 12px;
+      color: #374151;
+      background: #fff;
+      outline: none;
+      cursor: pointer;
+    }
+
+    .scope-select:focus {
+      border-color: #1d6be5;
+      box-shadow: 0 0 0 3px rgba(29, 107, 229, .1);
+    }
+
+    .sidebar-divider {
+      height: 1px;
+      background: #f3f4f6;
+      margin: 4px -16px;
+    }
+
+    .sys-info-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 4px 0;
+      font-size: 12px;
+      color: #6b7280;
+    }
+
+    .sys-info-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: #16c96f;
+      flex-shrink: 0;
+    }
+
+    /* ─── Chat section ───────────────────────────────────── */
+    .chat-section {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      background: #f5f6fa;
+      min-width: 0;
+    }
+
+    /* Fund header card (mimics INDmoney fund page header) */
+    .fund-header-card {
+      background: #fff;
+      border-bottom: 1px solid #e5e7eb;
+      padding: 20px 24px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .fund-logo {
+      width: 48px;
+      height: 48px;
+      border-radius: 10px;
+      background: linear-gradient(135deg, #e53e3e, #c53030);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #fff;
+      font-weight: 800;
+      font-size: 14px;
+      letter-spacing: -.5px;
+      flex-shrink: 0;
+    }
+
+    .fund-header-info {
+      flex: 1;
+    }
+
+    .fund-header-name {
+      font-size: 16px;
+      font-weight: 700;
+      color: #111827;
+      margin-bottom: 4px;
+    }
+
+    .fund-header-pills {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+
+    .fund-pill {
+      font-size: 11px;
+      color: #1d6be5;
+      font-weight: 500;
+      border: 1px solid #bfdbfe;
+      padding: 2px 10px;
+      border-radius: 999px;
+      background: #eff6ff;
+      text-decoration: none;
+    }
+
+    .fund-pill:hover {
+      background: #dbeafe;
+    }
+
+    /* Welcome state */
+    .welcome-panel {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 40px 24px;
+      text-align: center;
+    }
+
+    .welcome-icon {
+      font-size: 3rem;
+      margin-bottom: 12px;
+    }
+
+    .welcome-title {
+      font-size: 22px;
+      font-weight: 700;
+      color: #111827;
+      margin-bottom: 8px;
+    }
+
+    .welcome-sub {
+      font-size: 13px;
+      color: #6b7280;
+      margin-bottom: 28px;
+      line-height: 1.6;
+      max-width: 480px;
+    }
+
+    /* Quick chips */
+    .chips-label {
+      font-size: 12px;
+      font-weight: 600;
+      color: #9ca3af;
+      text-transform: uppercase;
+      letter-spacing: .6px;
+      margin-bottom: 12px;
+    }
+
+    .chips-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      max-width: 640px;
+      width: 100%;
+      margin-bottom: 0;
+    }
+
+    .chip-btn {
+      background: #fff;
+      border: 1px solid #e5e7eb;
+      color: #374151;
+      padding: 10px 14px;
+      border-radius: 8px;
+      font-size: 12px;
+      font-weight: 500;
+      cursor: pointer;
+      text-align: left;
+      line-height: 1.4;
+      transition: all .15s;
+    }
+
+    .chip-btn:hover {
+      border-color: #1d6be5;
+      color: #1d6be5;
+      background: #eff6ff;
+    }
+
+    /* Chat messages area */
+    .messages-panel {
+      flex: 1;
+      overflow-y: auto;
+      padding: 20px 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      scroll-behavior: smooth;
+    }
+
+    /* Loader dots */
+    .typing-indicator {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      padding: 12px 16px;
+    }
+
+    .typing-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: #9ca3af;
+      animation: bounce .9s infinite;
+    }
+
+    .typing-dot:nth-child(2) {
+      animation-delay: .15s;
+    }
+
+    .typing-dot:nth-child(3) {
+      animation-delay: .30s;
+    }
+
+    @keyframes bounce {
+
+      0%,
+      80%,
+      100% {
+        transform: scale(1);
+      }
+
+      40% {
+        transform: scale(1.4);
+      }
+    }
+
+    /* Message bubbles */
+    .msg-row {
+      display: flex;
+      gap: 10px;
+      animation: fadeInUp .25s ease;
+    }
+
+    @keyframes fadeInUp {
+      from {
+        opacity: 0;
+        transform: translateY(8px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .msg-row.user {
+      flex-direction: row-reverse;
+    }
+
+    .msg-avatar {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    .msg-avatar.user {
+      background: #1d6be5;
+      color: #fff;
+    }
+
+    .msg-avatar.bot {
+      background: #f3f4f6;
+      color: #374151;
+      border: 1px solid #e5e7eb;
+    }
+
+    .msg-bubble {
+      max-width: 72%;
+      padding: 12px 16px;
+      border-radius: 12px;
+      font-size: 13px;
+      line-height: 1.65;
+    }
+
+    .msg-bubble.user {
+      background: #1d6be5;
+      color: #fff;
+      border-radius: 12px 4px 12px 12px;
+    }
+
+    .msg-bubble.bot {
+      background: #fff;
+      color: #1a1a1a;
+      border: 1px solid #e5e7eb;
+      border-radius: 4px 12px 12px 12px;
+    }
+
+    .msg-bubble.blocked {
+      background: #fff8f8;
+      border-color: #fecaca;
+      color: #991b1b;
+    }
+
+    /* Source card */
+    .source-card {
+      background: #f0f7ff;
+      border: 1px solid #bfdbfe;
+      border-radius: 8px;
+      padding: 8px 12px;
+      margin-top: 8px;
+      font-size: 11px;
+      color: #1d4ed8;
+      display: flex;
+      align-items: flex-start;
+      gap: 6px;
+    }
+
+    .source-card a {
+      color: #1d4ed8;
+      text-decoration: none;
+    }
+
+    .source-card a:hover {
+      text-decoration: underline;
+    }
+
+    /* Safety reason tag */
+    .safety-tag {
+      display: inline-block;
+      background: #fef3c7;
+      color: #92400e;
+      border: 1px solid #fde68a;
+      border-radius: 999px;
+      font-size: 10px;
+      font-weight: 600;
+      padding: 2px 8px;
+      margin-bottom: 6px;
+    }
+
+    /* ─── Bottom bar ─────────────────────────────────────── */
+    .bottom-bar {
+      background: #fff;
+      border-top: 1px solid #e5e7eb;
+      padding: 12px 24px;
+      position: sticky;
+      bottom: 0;
+      z-index: 100;
+    }
+
+    .input-row {
+      display: flex;
+      gap: 10px;
+      align-items: flex-end;
+      max-width: 860px;
+      margin: 0 auto;
+    }
+
+    .chat-input {
+      flex: 1;
+      padding: 10px 14px;
+      border: 1.5px solid #d1d5db;
+      border-radius: 8px;
+      font-size: 13px;
+      font-family: inherit;
+      color: #111827;
+      background: #fff;
+      resize: none;
+      outline: none;
+      min-height: 42px;
+      max-height: 120px;
+      transition: border-color .15s, box-shadow .15s;
+      line-height: 1.5;
+    }
+
+    .chat-input:focus {
+      border-color: #1d6be5;
+      box-shadow: 0 0 0 3px rgba(29, 107, 229, .12);
+    }
+
+    .chat-input::placeholder {
+      color: #9ca3af;
+    }
+
+    .send-btn {
+      background: #16c96f;
+      color: #fff;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      white-space: nowrap;
+      height: 42px;
+      min-width: 80px;
+      transition: all .15s;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .send-btn:hover {
+      background: #15b863;
+      box-shadow: 0 4px 12px rgba(22, 201, 111, .35);
+    }
+
+    .send-btn:disabled {
+      background: #9ca3af;
+      cursor: not-allowed;
+      box-shadow: none;
+    }
+
+    .send-btn svg {
+      width: 14px;
+      height: 14px;
+    }
+
+    /* ─── Disclaimer ─────────────────────────────────────────────────── */
+    .disclaimer {
+      text-align: center;
+      font-size: 11px;
+      color: #9ca3af;
+      padding: 8px 24px 4px;
+      background: #fff;
+      border-top: 1px solid #f3f4f6;
+    }
+
+    /* ─── Scope Indicator ──────────────────────────────────────────── */
+    .scope-indicator {
+      display: none;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 12px;
+      background: #eff6ff;
+      border: 1px solid #bfdbfe;
+      border-radius: 6px;
+      font-size: 11px;
+      font-weight: 500;
+      color: #1d4ed8;
+      max-width: 860px;
+      margin: 0 auto 8px;
+    }
+
+    .scope-indicator.visible {
+      display: flex;
+    }
+
+    .scope-indicator-icon {
+      font-size: 13px;
+    }
+
+    .scope-clear-btn {
+      margin-left: auto;
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: #6b7280;
+      font-size: 12px;
+      padding: 0 2px;
+      line-height: 1;
+      transition: color .15s;
+    }
+
+    .scope-clear-btn:hover {
+      color: #dc2626;
+    }
+
+    /* ─── Scrollbar ──────────────────────────────────────── */
+    ::-webkit-scrollbar {
+      width: 5px;
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: #e5e7eb;
+      border-radius: 999px;
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+      background: #d1d5db;
+    }
+
+    /* ─── Responsive ─────────────────────────────────────── */
+    @media(max-width:768px) {
+      .sidebar {
+        display: none;
+      }
+
+      .fund-header-metrics {
+        display: none;
+      }
+
+      .chips-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- ══════════════════════════════════════════════════════
+     TOP NAVIGATION
+══════════════════════════════════════════════════════ -->
+  <header class="top-nav">
+    <div class="nav-left">
+      <div class="logo-badge">MFA</div>
+      <span class="nav-brand">Mutual Fund Assistant</span>
+      <nav class="nav-links">
+        <a href="https://www.indmoney.com/mutual-funds" target="_blank" class="nav-link">Mutual Funds</a>
+        <a href="#" class="nav-link active">Mutual Fund FAQ Chat</a>
+      </nav>
+    </div>
+    <div class="nav-right">
+      <div id="statusBadge" class="status-badge offline">
+        <span class="status-dot offline" id="statusDot"></span>
+        <span id="statusText">Checking…</span>
+      </div>
+    </div>
+  </header>
+
+  <!-- ══════════════════════════════════════════════════════
+     SUB-NAV TABS
+══════════════════════════════════════════════════════ -->
+  <div class="sub-nav">
+    <div class="sub-nav-inner">
+      <button class="tab-btn active" onclick="switchTab('chat',this)">💬 Chat</button>
+      <button class="tab-btn" onclick="switchTab('funds',this)">📊 Fund Info</button>
+      <button class="tab-btn" onclick="switchTab('tips',this)">💡 Quick Tips</button>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════════════════
+     BREADCRUMB
+══════════════════════════════════════════════════════ -->
+  <nav class="breadcrumb">
+    <span class="current">Nippon India Mutual Fund FAQ Assistant</span>
+  </nav>
+
+  <!-- ══════════════════════════════════════════════════════
+     MAIN LAYOUT
+══════════════════════════════════════════════════════ -->
+  <div class="main-layout">
+    <button class="restore-sidebar-btn" id="restoreSidebar" onclick="toggleSidebar()">
+      &gt;&gt;&gt;
+    </button>
+
+    <!-- ── SIDEBAR ─────────────────────────────────────── -->
+    <aside class="sidebar" id="sidebar">
+      <button class="sidebar-toggle-btn" onclick="toggleSidebar()">&lt;&lt;&lt;</button>
+
+      <!-- Filter Buttons -->
+      <div>
+        <div class="sidebar-section-title">Filter by Category</div>
+        <div class="filter-btns">
+          <button class="filter-btn active" onclick="filterFunds('All', this)">All</button>
+          <button class="filter-btn" onclick="filterFunds('Equity', this)">Equity</button>
+          <button class="filter-btn" onclick="filterFunds('Debt', this)">Debt</button>
+          <button class="filter-btn" onclick="filterFunds('Hybrid', this)">Hybrid</button>
+        </div>
+      </div>
+
+      <!-- Fund Dropdown -->
+      <div>
+        <div class="sidebar-section-title">Select Mutual Fund</div>
+        <select class="scope-select" id="fundDropdown" onchange="selectFund(this.value)">
+          <option value="">All Funds</option>
+          <!-- Populated by JS -->
+        </select>
+      </div>
+
+      <div class="sidebar-divider"></div>
+
+      <!-- Refresh Data -->
+      <div>
+        <button class="refresh-btn" id="refreshBtn" onclick="refreshData()">
+          🔄 Refresh Data
+        </button>
+        <div id="refreshStatus" class="refresh-status"></div>
+        <div class="last-updated-label" id="lastUpdatedLabel">Data last updated: <span
+            id="lastUpdatedTime">Loading…</span></div>
+      </div>
+
+      <div class="sidebar-divider"></div>
+
+      <!-- Clear btn -->
+      <button onclick="clearChat()"
+        style="width:100%;padding:8px;border:1px solid #e5e7eb;border-radius:6px;background:#fff;color:#6b7280;font-size:12px;font-weight:500;cursor:pointer;transition:all .15s; margin-top: auto;"
+        onmouseover="this.style.background='#f9fafb'" onmouseout="this.style.background='#fff'">
+        🗑️ Clear Conversation
+      </button>
+
+    </aside>
+
+    <!-- ── CHAT SECTION ────────────────────────────────── -->
+    <section class="chat-section" id="chatTab">
+
+      <!-- Fund Header (INDmoney-style) -->
+      <div class="fund-header-card">
+        <div class="fund-logo">NI</div>
+        <div class="fund-header-info">
+          <div class="fund-header-name">Nippon India Mutual Fund FAQ Assistant</div>
+          <div class="fund-header-pills">
+            <span class="fund-pill">Powered by INDMoney</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Welcome / Messages Panel -->
+      <div id="welcomePanel" class="welcome-panel">
+        <div class="welcome-icon">🏦</div>
+        <h2 class="welcome-title">How can I help you today?</h2>
+        <p class="welcome-sub">
+          Ask any factual question about the 6 Nippon India mutual funds indexed from INDMoney —
+          expense ratios, exit loads, SIP minimums, NAV, lock-in periods, risk levels and more.
+        </p>
+        <div class="chips-label">Quick Start — click a question below</div>
+        <div class="chips-grid" id="chipGrid">
+          <!-- Populated by JS -->
+        </div>
+      </div>
+
+      <!-- Chat Messages (hidden until first message) -->
+      <div id="messagesPanel" class="messages-panel" style="display:none;"></div>
+
+    </section>
+
+    <!-- ── FUND INFO TAB ───────────────────────────────── -->
+    <section class="chat-section" id="fundsTab" style="display:none;">
+      <div style="padding:24px;max-width:700px;">
+        <h2 style="font-size:18px;font-weight:700;color:#111827;margin-bottom:4px;">Covered Mutual Funds</h2>
+        <p style="font-size:13px;color:#6b7280;margin-bottom:20px;">All fund data is sourced exclusively from INDMoney
+          official pages.</p>
+        <div id="fundCards" style="display:flex;flex-direction:column;gap:12px;"></div>
+      </div>
+    </section>
+
+    <!-- ── TIPS TAB ────────────────────────────────────── -->
+    <section class="chat-section" id="tipsTab" style="display:none;">
+      <div style="padding:24px;max-width:700px;">
+        <h2 style="font-size:18px;font-weight:700;color:#111827;margin-bottom:16px;">💡 What Can I Ask?</h2>
+        <div id="tipCards" style="display:flex;flex-direction:column;gap:10px;"></div>
+        <div style="margin-top:24px;padding:14px;background:#fff8f0;border:1px solid #fed7aa;border-radius:8px;">
+          <p style="font-size:13px;color:#9a3412;font-weight:600;">⚠️ What I Cannot Do</p>
+          <ul style="font-size:12px;color:#c2410c;margin-top:8px;padding-left:16px;line-height:2;">
+            <li>Give investment advice or recommendations</li>
+            <li>Compare funds or suggest which is "better"</li>
+            <li>Calculate projected returns or CAGR</li>
+            <li>Handle personal information (PAN, Aadhaar, email, etc.)</li>
+            <li>Answer questions outside mutual fund data</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+
+  </div>
+
+  <!-- ══════════════════════════════════════════════════════
+     BOTTOM INPUT BAR
+══════════════════════════════════════════════════════ -->
+  <div class="bottom-bar">
+    <div id="scopeIndicator" class="scope-indicator">
+      <span class="scope-indicator-icon">🔍</span>
+      <span id="scopeIndicatorText"></span>
+      <button class="scope-clear-btn" onclick="clearScopeFilter()" title="Remove filter">✕</button>
+    </div>
+    <div class="input-row">
+      <textarea id="chatInput" class="chat-input" rows="1"
+        placeholder="Ask about expense ratio, SIP minimum, risk level, lock-in period…" onkeydown="handleKey(event)"
+        oninput="autoResize(this)"></textarea>
+      <button class="send-btn" id="sendBtn" onclick="sendMessage()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <line x1="22" y1="2" x2="11" y2="13" />
+          <polygon points="22 2 15 22 11 13 2 9 22 2" />
+        </svg>
+        Ask
+      </button>
+    </div>
+  </div>
+
+  <div class="disclaimer">
+    ⚠️ This chatbot provides factual information only from indexed fund data. Not investment advice. Data sourced from
+    INDMoney.
+    &nbsp;|&nbsp; <a href="https://www.indmoney.com/mutual-funds" target="_blank" style="color:#1d6be5;">View all funds
+      on INDMoney →</a>
+  </div>
+
+  <!-- ══════════════════════════════════════════════════════
+     JAVASCRIPT
+══════════════════════════════════════════════════════ -->
+  <script>
+    // ── Config ──────────────────────────────────────────────────────────────
+    const API_BASE = window.location.origin;
+
+    const SUGGESTED_QUESTIONS = [
+      "What is the expense ratio of Nippon India ELSS Tax Saver Fund?",
+      "What is the minimum SIP for the Balanced Advantage Fund?",
+      "What is the lock-in period for the ELSS fund?",
+      "What is the risk level of Nippon Silver ETF FOF?",
+      "Who is the fund manager of the Short Duration Fund?",
+      "What is the benchmark index of the Nifty Auto Index Fund?",
+      "What is the exit load for Nippon ELSS Tax Saver Fund?",
+      "What is the AUM of Nippon India Balanced Advantage Fund?"
+    ];
+
+    const TIP_CATEGORIES = [
+      { icon: '📊', title: 'Fund Overview', examples: ['What is the NAV of ELSS?', 'What is the AUM of Balanced Advantage?', 'Who manages the Silver ETF FOF?'] },
+      { icon: '💰', title: 'Costs & Loads', examples: ['What is the expense ratio of Nifty Auto Index Fund?', 'What is the exit load for ELSS?', 'What are the charges of Short Duration Fund?'] },
+      { icon: '📅', title: 'SIP & Investment', examples: ['Minimum SIP for Balanced Advantage?', 'Minimum lumpsum for CRISIL IBX Fund?'] },
+      { icon: '⚖️', title: 'Risk & Benchmark', examples: ['Risk level of Short Duration Fund?', 'Benchmark index of Nifty Auto Index Fund?'] },
+      { icon: '🔒', title: 'Lock-in & Tax', examples: ['Lock-in period of ELSS Tax Saver Fund?', 'Tax benefits of ELSS?'] },
+      { icon: '📈', title: 'Returns', examples: ['1-year return of Nippon ELSS Fund?', 'Historical returns of Balanced Advantage Fund?'] },
+    ];
+
+    // ── State ────────────────────────────────────────────────────────────────
+    let messages = [];
+    let isLoading = false;
+    let funds = [];
+    let selectedFundKey = '';       // specific fund_key from dropdown (e.g. 'nippon_elss_tax_saver')
+    let selectedCategoryFilter = ''; // category name from filter buttons (e.g. 'Equity')
+
+    // ── DOM references ───────────────────────────────────────────────────────
+    const $chatInput = document.getElementById('chatInput');
+    const $sendBtn = document.getElementById('sendBtn');
+    const $messagesPanel = document.getElementById('messagesPanel');
+    const $welcomePanel = document.getElementById('welcomePanel');
+    const $fundDropdown = document.getElementById('fundDropdown');
+    const $chipGrid = document.getElementById('chipGrid');
+    const $statusBadge = document.getElementById('statusBadge');
+    const $statusDot = document.getElementById('statusDot');
+    const $statusText = document.getElementById('statusText');
+
+    // ── Init ─────────────────────────────────────────────────────────────────
+    async function init() {
+      renderChips();
+      renderTips();
+      await checkHealth();
+      await loadFunds();
+      await loadStatus();          // populate "Data last updated" label
+      setInterval(checkHealth, 30000);
+    }
+
+    // ── Health check ─────────────────────────────────────────────────────────
+    async function checkHealth() {
+      try {
+        const resp = await fetch(`${API_BASE}/health`, { signal: AbortSignal.timeout(5000) });
+        const data = await resp.json();
+        const online = data.backend === 'online';
+        $statusBadge.className = `status-badge ${online ? 'online' : 'offline'}`;
+        $statusDot.className = `status-dot   ${online ? 'online' : 'offline'}`;
+        $statusText.textContent = online ? '● Backend Online' : '● Backend Offline';
+      } catch {
+        $statusBadge.className = 'status-badge offline';
+        $statusDot.className = 'status-dot offline';
+        $statusText.textContent = '● Backend Offline';
+      }
+    }
+
+    // ── Load funds from API ───────────────────────────────────────────────────
+    async function loadFunds() {
+      try {
+        const resp = await fetch(`${API_BASE}/funds`);
+        const data = await resp.json();
+        funds = data.funds || [];
+        renderFundList();
+        renderFundCards();
+      } catch (e) {
+        console.error('Failed to load funds', e);
+      }
+    }
+
+    function renderFundList(filteredFunds = null) {
+      const targetFunds = filteredFunds || funds;
+      $fundDropdown.innerHTML = '<option value="">All Funds</option>';
+
+      targetFunds.forEach(f => {
+        const shortName = f.display_name
+          .replace(' - Direct Plan Growth', '')
+          .replace(' - Direct Growth Plan', '')
+          .replace(' - Direct Growth', '');
+
+        const opt = document.createElement('option');
+        opt.value = f.fund_key;
+        opt.textContent = shortName;
+        $fundDropdown.appendChild(opt);
+      });
+    }
+
+    function filterFunds(category, btn) {
+      document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+
+      if (category === 'All') {
+        // Clear both the category filter and the fund dropdown
+        selectedCategoryFilter = '';
+        selectedFundKey = '';
+        $fundDropdown.value = '';
+        renderFundList(funds);
+      } else {
+        // Set category filter; clear any specific fund selection
+        selectedCategoryFilter = category;
+        selectedFundKey = '';
+        $fundDropdown.value = '';
+        const filtered = funds.filter(f => f.category.includes(category));
+        renderFundList(filtered);
+      }
+      updateScopeIndicator();
+    }
+
+    function selectFund(key) {
+      selectedFundKey = key;
+      if (key) {
+        // A specific fund is chosen — clear category-level filter (fund is more specific)
+        selectedCategoryFilter = '';
+        document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+        // Keep dropdown showing only the current category's funds (don't reset to All)
+      }
+      updateScopeIndicator();
+    }
+
+    // ── Load scheduler status (last_refresh) ─────────────────────────────────
+    async function loadStatus() {
+      try {
+        const resp = await fetch(`${API_BASE}/status`, { signal: AbortSignal.timeout(5000) });
+        const data = await resp.json();
+        updateLastUpdated(data.last_refresh);
+      } catch (e) {
+        updateLastUpdated(null);
+      }
+    }
+
+    function updateLastUpdated(isoTimestamp) {
+      const $time = document.getElementById('lastUpdatedTime');
+      if (!$time) return;
+      if (!isoTimestamp || isoTimestamp === 'Never') {
+        $time.textContent = 'Never';
+        return;
+      }
+      try {
+        const dt = new Date(isoTimestamp);
+        // Format: "4 Mar 2026, 12:34 PM"
+        const opts = { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' };
+        $time.textContent = dt.toLocaleString('en-IN', opts);
+      } catch {
+        $time.textContent = isoTimestamp;
+      }
+    }
+
+    async function refreshData() {
+      const btn = document.getElementById('refreshBtn');
+      const status = document.getElementById('refreshStatus');
+      btn.disabled = true;
+      status.textContent = '⏳ Refreshing… (~30-60s)';
+      status.style.color = '#1d6be5';
+      try {
+        const resp = await fetch(`${API_BASE}/refresh`, { method: 'POST' });
+        if (!resp.ok) throw new Error('Refresh failed');
+        const data = await resp.json();
+        status.textContent = '✅ Data refreshed!';
+        status.style.color = '#16a34a';
+        updateLastUpdated(data.last_refresh || null);
+        await loadFunds();
+        setTimeout(() => { status.textContent = ''; }, 4000);
+      } catch (e) {
+        status.textContent = '❌ Refresh failed.';
+        status.style.color = '#dc2626';
+      } finally {
+        btn.disabled = false;
+      }
+    }
+
+    function renderFundCards() {
+      const $fc = document.getElementById('fundCards');
+      if (!$fc) return;
+      $fc.innerHTML = '';
+      funds.forEach(f => {
+        const shortName = f.display_name
+          .replace(' - Direct Plan Growth', '')
+          .replace(' - Direct Growth Plan', '')
+          .replace(' - Direct Growth', '');
+        $fc.innerHTML += `
+      <div style="background:#fff;border:1px solid #e5e7eb;border-radius:8px;padding:16px;display:flex;justify-content:space-between;align-items:center;">
+        <div>
+          <div style="font-size:14px;font-weight:600;color:#111827;">${shortName}</div>
+          <div style="margin-top:4px;"><span style="background:#eff6ff;color:#1d6be5;border:1px solid #bfdbfe;border-radius:999px;padding:2px 8px;font-size:11px;">${f.category}</span></div>
+        </div>
+        <a href="${f.url}" target="_blank" style="color:#1d6be5;font-size:12px;font-weight:500;text-decoration:none;white-space:nowrap;">View on INDMoney →</a>
+      </div>`;
+      });
+    }
+
+    // ── Render quick-start chips ──────────────────────────────────────────────
+    function renderChips() {
+      $chipGrid.innerHTML = '';
+      SUGGESTED_QUESTIONS.slice(0, 4).forEach(q => {
+        const btn = document.createElement('button');
+        btn.className = 'chip-btn';
+        btn.textContent = q;
+        btn.onclick = () => submitQuery(q);
+        $chipGrid.appendChild(btn);
+      });
+    }
+
+    // ── Render tips ───────────────────────────────────────────────────────────
+    function renderTips() {
+      const $tc = document.getElementById('tipCards');
+      if (!$tc) return;
+      TIP_CATEGORIES.forEach(category => {
+        $tc.innerHTML += `
+      <div style="background:#fff;border:1px solid #e5e7eb;border-radius:8px;padding:14px;">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
+          <span style="font-size:18px;">${category.icon}</span>
+          <span style="font-size:13px;font-weight:600;color:#111827;">${category.title}</span>
+        </div>
+        <div style="display:flex;flex-wrap:wrap;gap:6px;">
+          ${category.examples.map(e => `<button onclick="submitQueryFromTip('${e.replace(/'/g, "\\'")}');"
+            style="background:#f9fafb;border:1px solid #e5e7eb;border-radius:6px;padding:5px 10px;font-size:11px;color:#374151;cursor:pointer;text-align:left;transition:all .15s;"
+            onmouseover="this.style.borderColor='#1d6be5';this.style.color='#1d6be5'"
+            onmouseout="this.style.borderColor='#e5e7eb';this.style.color='#374151'"
+            >${e}</button>`).join('')}
+        </div>
+      </div>`;
+      });
+    }
+
+    function submitQueryFromTip(q) {
+      switchTab('chat', document.querySelector('.tab-btn'));
+      setTimeout(() => submitQuery(q), 50);
+    }
+
+    // ── Tab switching ─────────────────────────────────────────────────────────
+    function switchTab(tab, clickedBtn) {
+      const tabs = { chat: 'chatTab', funds: 'fundsTab', tips: 'tipsTab', about: 'aboutTab' };
+      Object.values(tabs).forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.style.display = 'none';
+      });
+      const target = document.getElementById(tabs[tab]);
+      if (target) target.style.display = 'flex';
+
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      if (clickedBtn) clickedBtn.classList.add('active');
+
+      // Bottom bar only for chat
+      const bottomBar = document.querySelector('.bottom-bar');
+      if (bottomBar) bottomBar.style.display = tab === 'chat' ? 'block' : 'none';
+    }
+
+    // ── Send message ──────────────────────────────────────────────────────────
+    function handleKey(e) {
+      if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        sendMessage();
+      }
+    }
+
+    function autoResize(el) {
+      el.style.height = 'auto';
+      el.style.height = Math.min(el.scrollHeight, 120) + 'px';
+    }
+
+    async function sendMessage() {
+      const text = $chatInput.value.trim();
+      if (!text || isLoading) return;
+      await submitQuery(text);
+    }
+
+    async function submitQuery(text) {
+      if (isLoading) return;
+      $chatInput.value = '';
+      $chatInput.style.height = 'auto';
+      showChatArea();
+      appendUserMessage(text);
+      await fetchAnswer(text);
+    }
+
+    function showChatArea() {
+      if ($welcomePanel.style.display !== 'none') {
+        $welcomePanel.style.display = 'none';
+        $messagesPanel.style.display = 'flex';
+      }
+    }
+
+    function appendUserMessage(text) {
+      messages.push({ role: 'user', content: text });
+      const row = document.createElement('div');
+      row.className = 'msg-row user';
+      row.innerHTML = `
+    <div class="msg-avatar user">You</div>
+    <div class="msg-bubble user">${escapeHtml(text)}</div>`;
+      $messagesPanel.appendChild(row);
+      scrollBottom();
+    }
+
+    async function fetchAnswer(query) {
+      isLoading = true;
+      $sendBtn.disabled = true;
+
+      // Typing indicator
+      const loaderId = 'loader-' + Date.now();
+      $messagesPanel.insertAdjacentHTML('beforeend', `
+    <div class="msg-row" id="${loaderId}">
+      <div class="msg-avatar bot">Mutual Fund</div>
+      <div class="msg-bubble bot">
+        <div class="typing-indicator">
+          <div class="typing-dot"></div>
+          <div class="typing-dot"></div>
+          <div class="typing-dot"></div>
+        </div>
+      </div>
+    </div>`);
+      scrollBottom();
+
+      try {
+        const resp = await fetch(`${API_BASE}/chat`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            query,
+            fund_filter: selectedFundKey || null,
+            category_filter: selectedCategoryFilter || null,
+          }),
+        });
+
+        const loader = document.getElementById(loaderId);
+        if (loader) loader.remove();
+
+        if (!resp.ok) {
+          const err = await resp.json().catch(() => ({}));
+          appendBotError(`❌ Server error (${resp.status}): ${err.detail || 'Unknown error'}`);
+          return;
+        }
+
+        const data = await resp.json();
+
+        if (data.blocked) {
+          appendBlockedMessage(data);
+        } else if (data.no_results) {
+          appendBotMessage(
+            "🔍 **No relevant information found** for your query in the indexed fund data.\n\n" +
+            "Please try rephrasing, or visit [INDMoney](https://www.indmoney.com/mutual-funds) directly.",
+            [], null
+          );
+        } else {
+          appendBotMessage(data.answer || '', data.sources || [], data.scraped_at);
+        }
+      } catch (err) {
+        const loader = document.getElementById(loaderId);
+        if (loader) loader.remove();
+        appendBotError('⚠️ Could not reach the backend. Please ensure the API server is running.');
+        console.error(err);
+      } finally {
+        isLoading = false;
+        $sendBtn.disabled = false;
+      }
+    }
+
+    function appendBotMessage(text, sources, scrapedAt) {
+      messages.push({ role: 'assistant', content: text });
+      const row = document.createElement('div');
+      row.className = 'msg-row';
+
+      let sourcesHtml = '';
+      if (sources && sources.length > 0) {
+        sourcesHtml = `
+          <div class="source-card">
+            <div style="font-weight:600;">Sources:</div>
+            <div style="display:flex;flex-direction:column;gap:2px;">
+              ${sources.map(s => `<a href="${s}" target="_blank">${s}</a>`).join('')}
+            </div>
+          </div>`;
+      }
+
+      row.innerHTML = `
+    <div class="msg-avatar bot">Mutual Fund</div>
+    <div>
+      <div class="msg-bubble bot">${markdownToHtml(text)}</div>
+      ${sourcesHtml}
+    </div>`;
+      $messagesPanel.appendChild(row);
+      scrollBottom();
+    }
+
+    function appendBlockedMessage(data) {
+      const reasons = {
+        'PII': '🔒 Privacy Protection',
+        'ADVICE': '💼 Investment Advice Policy',
+        'COMPARISON': '⚖️ Comparison Policy',
+        'COMPUTATION': '🧮 Computation Policy',
+        'OFF_TOPIC': '🚫 Out of Scope',
+        'PROMPT_INJ': '🛡️ Security Policy',
+      };
+      const tag = reasons[data.block_reason] || '🚫 Blocked';
+      const row = document.createElement('div');
+      row.className = 'msg-row';
+      row.innerHTML = `
+    <div class="msg-avatar bot">Mutual Fund</div>
+    <div>
+      <div class="safety-tag">${tag}</div>
+      <div class="msg-bubble bot blocked">${markdownToHtml(data.response || 'Query blocked by safety policy.')}</div>
+    </div>`;
+      $messagesPanel.appendChild(row);
+      scrollBottom();
+    }
+
+    function appendBotError(text) {
+      const row = document.createElement('div');
+      row.className = 'msg-row';
+      row.innerHTML = `
+    <div class="msg-avatar bot">!</div>
+    <div class="msg-bubble bot blocked">${escapeHtml(text)}</div>`;
+      $messagesPanel.appendChild(row);
+      scrollBottom();
+    }
+
+    // ── Clear chat ────────────────────────────────────────────────────────────
+    function clearChat() {
+      messages = [];
+      $messagesPanel.innerHTML = '';
+      $messagesPanel.style.display = 'none';
+      $welcomePanel.style.display = 'flex';
+    }
+
+    // ── Helpers ───────────────────────────────────────────────────────────────
+    function scrollBottom() {
+      $messagesPanel.scrollTop = $messagesPanel.scrollHeight;
+    }
+
+    function escapeHtml(str) {
+      return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;').replace(/'/g, '&#039;');
+    }
+
+    function markdownToHtml(md) {
+      if (!md) return '';
+      let html = md
+        .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+        .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+        .replace(/\*(.+?)\*/g, '<em>$1</em>')
+        .replace(/`(.+?)`/g, '<code style="background:#f3f4f6;padding:1px 5px;border-radius:3px;font-size:12px;">$1</code>')
+        .replace(/\[([^\]]+)\]\((https?:\/\/[^)]+)\)/g, '<a href="$2" target="_blank" style="color:#1d6be5;text-decoration:underline;">$1</a>')
+        .replace(/^#{1,3}\s+(.+)$/gm, '<strong>$1</strong>')
+        .replace(/^- (.+)$/gm, '• $1')
+        .replace(/\n/g, '<br>');
+
+      // Linkify plain URLs
+      const urlRegex = /(https?:\/\/[^\s<]+)/g;
+      html = html.replace(urlRegex, (url) => {
+        // Avoid double-linking already processed markdown links
+        if (url.includes('style="color:#1d6be5')) return url;
+        return `<a href="${url}" target="_blank" style="color:#1d6be5;text-decoration:underline;">${url}</a>`;
+      });
+      return html;
+    }
+
+    // ── Scope Indicator ─────────────────────────────────────────────────────────
+    function updateScopeIndicator() {
+      const $ind = document.getElementById('scopeIndicator');
+      const $txt = document.getElementById('scopeIndicatorText');
+      if (!$ind || !$txt) return;
+
+      if (selectedFundKey) {
+        // Show name of selected fund (abbreviate from dropdown option text)
+        const opt = $fundDropdown.querySelector(`option[value="${selectedFundKey}"]`);
+        const label = opt ? opt.textContent : selectedFundKey;
+        $txt.textContent = `Responses scoped to: ${label}`;
+        $ind.classList.add('visible');
+      } else if (selectedCategoryFilter) {
+        $txt.textContent = `Responses scoped to: ${selectedCategoryFilter} funds only`;
+        $ind.classList.add('visible');
+      } else {
+        $ind.classList.remove('visible');
+      }
+    }
+
+    function clearScopeFilter() {
+      // Reset all filters to "All"
+      selectedFundKey = '';
+      selectedCategoryFilter = '';
+      $fundDropdown.value = '';
+      document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+      // Re-activate the "All" filter button
+      const allBtn = document.querySelector('.filter-btn[onclick*="All"]');
+      if (allBtn) allBtn.classList.add('active');
+      renderFundList(funds);
+      updateScopeIndicator();
+    }
+
+    // ── Collapsible Sidebar ────────────────────────────────────────────────
+    function toggleSidebar() {
+      const sidebar = document.getElementById('sidebar');
+      const restoreBtn = document.getElementById('restoreSidebar');
+      sidebar.classList.toggle('collapsed');
+      restoreBtn.classList.toggle('visible');
+    }
+
+    // ── Start ─────────────────────────────────────────────────────────────────
+    init();
+  </script>
+</body>
+
+</html>

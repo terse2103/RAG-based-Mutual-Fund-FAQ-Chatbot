@@ -1,0 +1,45 @@
+# =============================================================================
+# .gitignore — RAG-based Mutual Fund FAQ Chatbot
+# =============================================================================
+
+# ─── Python ───────────────────────────────────────────────────────────────────
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+*.egg
+*.egg-info/
+dist/
+build/
+.eggs/
+
+# ─── Environments ─────────────────────────────────────────────────────────────
+.env
+.venv/
+venv/
+env/
+
+# ─── Test / CI ────────────────────────────────────────────────────────────────
+.pytest_cache/
+.coverage
+htmlcov/
+
+# ─── Logs ─────────────────────────────────────────────────────────────────────
+logs/
+*.log
+
+# ─── Runtime data (raw scraped and intermediate pipeline files) ───────────────
+# NOTE: data/vectorstore/ is intentionally NOT ignored so that the pre-built
+# vector index is committed to the repo and available on Vercel.
+data/raw/
+data/cleaned/
+data/chunks/
+
+# ─── Playwright ───────────────────────────────────────────────────────────────
+.playwright/
+
+# ─── IDE / OS ─────────────────────────────────────────────────────────────────
+.vscode/
+.idea/
+*.DS_Store
+Thumbs.db

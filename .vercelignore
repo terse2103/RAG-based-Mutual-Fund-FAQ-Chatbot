@@ -1,0 +1,47 @@
+# =============================================================================
+# .vercelignore — Files excluded from the Vercel deployment bundle
+# =============================================================================
+
+# Python caches & compiled bytecode
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.pytest_cache/
+
+# Local development logs (not needed in production)
+logs/
+server_startup.log
+
+# Raw & intermediate pipeline data (only vectorstore is needed)
+data/raw/
+data/cleaned/
+data/chunks/
+
+# Test files
+phase*/test_*.py
+phase8_testing/
+
+# Playwright browser binaries (not supported on Vercel)
+# If playwright was installed locally, these are large and must be excluded
+.playwright/
+
+# Local environment (secrets must be set in Vercel dashboard, not committed)
+# NOTE: .env is listed here to prevent accidental deployment of secrets.
+# Add GROQ_API_KEY as a Vercel Environment Variable instead.
+.env
+
+# Phase-specific runner scripts (not needed at runtime)
+phase*/run_phase*.py
+master_refresh.py
+scheduler.py
+
+# Development-only docs
+Architecture.md
+sample_qa.md
+source_list.md
+disclaimer.md
+
+# Git
+.git/
+.gitignore

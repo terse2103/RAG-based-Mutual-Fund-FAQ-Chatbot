@@ -1,0 +1,33 @@
+# =============================================================================
+# requirements.txt — Vercel-compatible dependency list
+# =============================================================================
+# Notes:
+#   • playwright is intentionally EXCLUDED — Vercel's serverless runtime does
+#     not support browser binaries. Scraping is done locally; only the
+#     pre-built vectorstore is deployed.
+#   • apscheduler is intentionally EXCLUDED — Vercel invocations are stateless;
+#     background cron jobs cannot survive between function invocations.
+#   • pytest is intentionally EXCLUDED — test-only dependency.
+# =============================================================================
+
+# ── Core & Vector Store (Phase 3) ─────────────────────────────────────────────
+chromadb>=0.4.0
+sentence-transformers>=2.2.0
+
+# ── Query Pipeline (Phase 4) ──────────────────────────────────────────────────
+thefuzz>=0.19.0
+python-Levenshtein>=0.20.0
+
+# ── Processing (Phase 2 — needed by chunker imported in scheduler, but
+#    chunker itself is not called on Vercel; still imported transitively) ───────
+beautifulsoup4>=4.12.0
+lxml>=4.9.0
+
+# ── Generation (Phase 6) ─────────────────────────────────────────────────────
+groq>=0.4.0
+python-dotenv>=1.0.0
+
+# ── Backend & Frontend (Phase 7) — FastAPI + Uvicorn ─────────────────────────
+fastapi>=0.109.0
+uvicorn[standard]>=0.27.0
+python-multipart>=0.0.9
