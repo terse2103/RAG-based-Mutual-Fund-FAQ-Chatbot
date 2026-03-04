@@ -435,7 +435,7 @@ class RAGChain:
 |---------|-------|---------|
 | Relevance threshold | cosine ≥ 0.35 | Prevents hallucination from irrelevant chunks |
 | Top-K | 3 | Balance between context richness and noise |
-| Fund filtering | Optional metadata filter | Narrows search when fund is identified |
+| Context Scoping | Metadata filter | Narrows search when a specific fund or category (Equity/Debt/Hybrid) is selected in the sidebar UI |
 
 ---
 
@@ -601,7 +601,9 @@ The frontend uses a **fully decoupled, Streamlit-free** architecture served by F
 - **FastAPI** — serves both the REST API and the HTML UI on port `8000`.
 - **REST API** — chat communication uses `POST /chat`.
 - **Vanilla HTML / CSS / JS** — a single-page app served at `GET /`.
-- **Design** — Inspired by INDMoney, featuring a "Powered by INDMoney" pill, fund category filters, and clickable source links.
+- **Interactive Sidebar** — Includes a `>>>` toggle, **Equity, Debt, and Hybrid** filter buttons, a fund selection dropdown, a **"Refresh Data"** orchestration button, and a dynamic "Data last updated" date display.
+- **Context Scoping** — The chatbot's response is highly scoped depending on the active sidebar filter (category or fund context enforcement).
+- **Refined UX** — Chatbot provides up to 4 quick-start suggestions and returns completely clean text responses, rendering the source URLs and timestamps in standalone, clickable UI buttons.
 
 ### 7.2 API Contract
 
@@ -609,8 +611,8 @@ The frontend uses a **fully decoupled, Streamlit-free** architecture served by F
 |--------|----------|-------------|
 | `GET`  | `/`      | Serves the HTML chatbot UI |
 | `GET`  | `/health`| Liveness probe |
-| `POST` | `/chat`  | Main RAG endpoint |
-| `POST` | `/refresh` | Trigger full data refresh (manual override) |
+| `POST` | `/chat`  | Main RAG endpoint (supports query, fund, and category filters) |
+| `POST` | `/refresh` | Trigger full data refresh (purging, scraping, ingestion pipeline) |
 
 #### `phase7_frontend/api_server.py`
 
@@ -672,6 +674,9 @@ logging.basicConfig(
 
 ### 9.1 Objective
 Automatically re-scrape all 6 allowed source pages **daily at 10:00 AM IST**, re-process chunks, re-embed into ChromaDB, and log the refresh status — ensuring the chatbot always serves fresh data.
+
+> [!IMPORTANT]
+> The scheduler implements a mandatory `_purge_previous_day_data()` logic before every re-scrape. This orchestrates an end-to-end data pipeline reset. It runs automatically, but the full pipeline can also be manually triggered via the frontend UI's **"Refresh Data"** button.
 
 ### 9.2 Architecture
 
@@ -820,6 +825,15 @@ RAG-based Mutual Fund FAQ Chatbot/
 ├── requirements.txt                # Python dependencies (Playwright, FastAPI, Groq, ChromaDB)
 ├── .env                            # Environment variables (API keys, config)
 ├── Architecture.md                 # Technical design & documentation
+├── README.md                       # Project overview and setup instructions
+├── source_list.md                  # Registry of allowed INDMoney URLs
+├── sample_qa.md                    # Example questions and answers
+├── disclaimer.md                   # UI disclaimer snippet
+├── vercel.json                     # Vercel deployment configuration
+├── .vercelignore                   # Files to ignore during Vercel build
+│
+├── api/                            # Vercel serverless functions wrapper
+│   └── index.py                    # Entry point for Vercel deployment
 │
 ├── phase1_scraping/                # Phase 1: Data Ingestion
 │   ├── config.py                   # URL Whitelist & Playwright settings

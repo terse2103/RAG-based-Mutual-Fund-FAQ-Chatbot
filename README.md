@@ -12,6 +12,13 @@ This project focuses on the Nippon India AMC (Asset Management Company) and cove
 - Nippon India Silver ETF Fund of Fund (FOF) - Direct Growth (Commodity)
 - Nippon India Balanced Advantage Fund - Direct Growth Plan (Hybrid)
 
+## Features
+
+- **Interactive UI & Sidebar**: A clean vanilla HTML/JS interface featuring a sidebar with **Equity, Debt, and Hybrid filter buttons**, a fund selection dropdown, and a custom collapse icon (`>>>`).
+- **Dynamic Context Scoping**: The chatbot tightly restricts its context and limits its answers specifically to the category or mutual fund selected in the sidebar.
+- **Refined Chat Experience**: Chat text responses are cleaned up, separating source links into clickable UI elements. Suggests up to 4 quick-start questions.
+- **Full Pipeline Orchestration**: The data is automatically refreshed daily at 10:00 AM IST. Users can also trigger an end-to-end pipeline run (which purges old data and re-scrapes) manually using the **"Refresh Data"** button in the sidebar (which displays the latest successful sync date).
+
 ## Setup Steps
 
 1. **Clone the repository:**
@@ -50,6 +57,13 @@ This project focuses on the Nippon India AMC (Asset Management Company) and cove
    ```
    This will start the FastAPI backend and serve the Vanilla HTML/JS Chatbot interface at `http://localhost:8000`.
 
+## Additional Documentation
+
+- **[Architecture.md](Architecture.md)**: Detailed phase-wise technical architecture, design notes, and system flow.
+- **[source_list.md](source_list.md)**: Complete registry of the 6 allowed INDMoney mutual fund URLs processed by the RAG pipeline.
+- **[sample_qa.md](sample_qa.md)**: Various example queries and responses showcasing the chatbot's capabilities and safety guardrails.
+- **[disclaimer.md](disclaimer.md)**: The UI disclaimer text dynamically injected into the interface.
+
 ## Vercel Deployment
 
 This project is actively configured for Vercel deployment using the Serverless Node runtime (with Python wrapping).
@@ -57,7 +71,7 @@ Due to Vercel's strict stateless environment (500MB function size limit, read-on
 
 ## Known Limitations
 
-- **Data Delay:** Scraping and processing are done in batches (daily scheduler), so real-time price changes (like minute-by-minute NAV) might not be instantly reflected.
+- **Data Delay:** Scraping and processing are done in batches (daily scheduler at 10:00 AM IST), so real-time price changes (like minute-by-minute NAV) might not be instantly reflected. You can manually run a fresh ingestion workflow via the "Refresh Data" UI button (local environment only).
 - **Limited Scope:** The chatbot only answers based on the 6 predefined Nippon India mutual fund links. It will reject queries outside this scope.
 - **No Financial Advice:** The chatbot enforces safety constraints, strictly preventing it from offering investment advice, recommendations, or hypothetical return calculations.
 - **Dynamic Content:** Heavy dynamic content on INDMoney requires JavaScript rendering (handled via Playwright); if page structures alter significantly, the scraper selectors may require updates.
