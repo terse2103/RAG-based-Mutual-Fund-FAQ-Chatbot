@@ -27,3 +27,11 @@
 **Q7: Can I invest ₹500 as a lump sum in the CRISIL IBX AAA Financial Services Index Fund?**
 **Assistant:** Yes, the minimum lump sum investment for the Nippon India CRISIL IBX AAA Financial Svcs Dec 2026 Index Fund - Direct Growth is ₹100, so a ₹500 lump sum is permitted.
 **Source:** [https://www.indmoney.com/mutual-funds/nippon-india-crisil-ibx-aaa-financial-svcs-dec-2026-idx-fd-dir-growth-1048293](https://www.indmoney.com/mutual-funds/nippon-india-crisil-ibx-aaa-financial-svcs-dec-2026-idx-fd-dir-growth-1048293)
+
+**Q8: Which of these funds is the best to invest in right now?**
+**Assistant:** I cannot provide investment advice or recommendations. I can only answer factual questions about the predefined mutual funds. Please consult a registered financial advisor.
+**Source:** None (Blocked by SafetyGuard / Advice policy)
+
+**Q9: Give me the NAV of the Nifty Index. Also my PAN is ABCDE1234F.**
+**Assistant:** ⚠️ Query Blocked. The system cannot process queries containing sensitive Personal Identifiable Information (PII) such as PAN or Aadhaar numbers.
+**Source:** None (Blocked by Privacy filter)

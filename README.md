@@ -30,8 +30,10 @@ This project focuses on the Nippon India AMC (Asset Management Company) and cove
    ```
 
 3. **Install dependencies:**
+   `requirements.txt` is currently optimized for Vercel deployment and heavily stripped down. To run the full scraping and embedding pipeline **locally**, install these extra packages:
    ```bash
    pip install -r requirements.txt
+   pip install playwright apscheduler sentence-transformers torch
    playwright install chromium
    ```
 
@@ -42,11 +44,16 @@ This project focuses on the Nippon India AMC (Asset Management Company) and cove
    ```
 
 5. **Run the application:**
-   Launch the app using the master refresh script or start the app directly:
+   Launch the app using the master refresh script (for initial data ingestion) or start the app directly:
    ```bash
    python app.py
    ```
-   This will start the FastAPI backend and open the Streamlit UI/Chatbot interface.
+   This will start the FastAPI backend and serve the Vanilla HTML/JS Chatbot interface at `http://localhost:8000`.
+
+## Vercel Deployment
+
+This project is actively configured for Vercel deployment using the Serverless Node runtime (with Python wrapping).
+Due to Vercel's strict stateless environment (500MB function size limit, read-only file system, and 10s execution limits), some features like backend **Data Refreshing** (via Playwright) are disabled on the live deployment. To update the knowledge base for a Vercel deployment, you must run `python app.py` (and trigger a refresh) natively on your local machine, and then commit the updated `/data` folder to GitHub to trigger a fresh Vercel build.
 
 ## Known Limitations
 

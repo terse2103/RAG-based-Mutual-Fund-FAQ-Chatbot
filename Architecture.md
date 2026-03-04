@@ -16,10 +16,11 @@
 8. [Phase 7 — Frontend & Backend](#phase-7--frontend--backend-fastapi-vanilla-htmljs)
 9. [Phase 8 — Testing, Monitoring & Maintenance](#phase-8--testing-monitoring--maintenance)
 10. [Phase 9 — Automated Daily Scheduler](#phase-9--automated-daily-scheduler)
-11. [Directory Structure](#directory-structure)
-12. [Technology Stack](#technology-stack)
-13. [Data Flow Diagram](#data-flow-diagram)
-14. [Allowed Sources Registry](#allowed-sources-registry)
+11. [Phase 10 — Vercel Serverless Deployment](#phase-10--vercel-serverless-deployment)
+12. [Directory Structure](#directory-structure)
+13. [Technology Stack](#technology-stack)
+14. [Data Flow Diagram](#data-flow-diagram)
+15. [Allowed Sources Registry](#allowed-sources-registry)
 
 ---
 
@@ -791,6 +792,23 @@ sequenceDiagram
 
 ---
 
+## Phase 10 — Vercel Serverless Deployment
+
+### 10.1 Objective
+Deploy the API server and frontend to Vercel's serverless platform while working around its strict environment limitations (read-only filesystem, 250MB size limit, no background workers).
+
+### 10.2 Serverless Quirks & Fixes
+
+| Limitation | Workaround |
+|------------|------------|
+| **Read-Only Filesystem** | ChromaDB needs to write SQLite locks. During initialization, `api/index.py` dynamically copies the `data/vectorstore` folder to Vercel's only writable directory: `/tmp`. |
+| **500MB Size Limit** | `torch` and `sentence-transformers` were removed from `requirements.txt`. The embedding pipeline dynamically falls back to ChromaDB's built-in ONNX runtime which is extremely lightweight. |
+| **ONNX Cache Crash** | ONNX attempts to download models to the user's home directory (`~/.cache`). We override `os.environ["HOME"] = "/tmp"` before ChromaDB loads so it caches the model safely in the writable `/tmp` layer. |
+| **Old SQLite Version** | Vercel Amazon Linux 2 ships with SQLite < 3.35, which breaks ChromaDB. We inject `pysqlite3-binary` and override Python's built-in `sqlite3` module in `api/index.py` before imports. |
+| **No Background Tasks** | Playwright requires Chromium, and APScheduler requires persistent async workers. Therefore, the **Refresh Data** feature currently deployed returns a `503 Unavailable` natively intercepted by the frontend to show a graceful "Disabled on Serverless" warning. Data refresh must be run locally, after which the updated database is pushed to Vercel. |
+
+---
+
 ## Directory Structure
 
 ```
@@ -875,23 +893,26 @@ RAG-based Mutual Fund FAQ Chatbot/
 | **LLM Model** | **LLaMA 3.3 70B Versatile** | — | Primary response generation |
 | **LLM Fallback** | **LLaMA 3.1 8B Instant** | — | Backup model on Groq |
 | **Fuzzy Match** | `thefuzz` | 0.22+ | Fund name recognition |
+| **Vercel SQLite Match** | `pysqlite3-binary` | 0.5+ | Overrides old SQLite for ChromaDB |
 | **PII Detection** | Python `re` (regex) | stdlib | Privacy protection |
 | **Language** | Python | 3.10+ | Core language |
 
-### `requirements.txt`
+### `requirements.txt` (Vercel Optimized)
 
 ```
-fastapi>=0.109.0
-uvicorn[standard]>=0.27.0
-playwright>=1.49.0
-apscheduler>=3.10.0
-sentence-transformers>=3.3.0
-chromadb>=0.5.0
-groq>=0.13.0
-thefuzz>=0.22.0
-python-levenshtein>=0.26.0
-python-dotenv>=1.0.0
+fastapi==0.110.0
+uvicorn==0.27.1
+chromadb==0.4.24
+groq==0.4.2
+pydantic==2.6.3
+python-dotenv==1.0.1
+thefuzz==0.22.1
+python-levenshtein==0.25.0
+pysqlite3-binary==0.5.3
+onnxruntime==1.17.1
+tokenizers==0.15.2
 ```
+*(Note: `torch`, `sentence-transformers`, `playwright`, and `apscheduler` are intentionally omitted from production deployment to respect Vercel bundle limits. They are required for local scraping/processing only).*
 
 ### `.env.example`
 
