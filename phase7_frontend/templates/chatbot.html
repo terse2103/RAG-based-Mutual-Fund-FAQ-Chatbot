@@ -1149,8 +1149,12 @@
         if (!ts || ts === 'Never') return;
 
         // Fix for naive ISO strings generated before UTC awareness:
-        // By default, JavaScript Date() treats 'YYYY-MM-DDTHH:MM:SS' as local time.
-        // We force it to evaluate as UTC by conditionally appending 'Z'
+        // Strip microseconds completely for cross-browser safety (Safari fails on 6 decimal places)
+        if (ts.includes('.')) {
+          ts = ts.split('.')[0];
+        }
+
+        // Force to UTC if missing timezone offset
         if (!ts.endsWith('Z') && !ts.includes('+') && !ts.includes('-0')) {
           ts += 'Z';
         }
