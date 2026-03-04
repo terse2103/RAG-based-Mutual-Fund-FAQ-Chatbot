@@ -984,6 +984,8 @@
           <div class="fund-header-name">Nippon India Mutual Fund FAQ Assistant</div>
           <div class="fund-header-pills">
             <span class="fund-pill">Powered by INDMoney</span>
+            <span class="fund-pill" id="dataAsOfPill" style="display:none;">📅 Data as of <span
+                id="dataAsOfDate"></span></span>
           </div>
         </div>
       </div>
@@ -1119,6 +1121,7 @@
       renderTips();
       await checkHealth();
       await loadFunds();
+      await loadDataAsOf();
       setInterval(checkHealth, 30000);
     }
 
@@ -1135,6 +1138,22 @@
         $statusBadge.className = 'status-badge offline';
         $statusDot.className = 'status-dot offline';
         $statusText.textContent = '● Backend Offline';
+      }
+    }
+
+    // ── Data as of pill ───────────────────────────────────────────────
+    async function loadDataAsOf() {
+      try {
+        const resp = await fetch(`${API_BASE}/status`, { signal: AbortSignal.timeout(5000) });
+        const data = await resp.json();
+        const ts = data.last_refresh;
+        if (!ts || ts === 'Never') return;
+        const dt = new Date(ts);
+        const opts = { day: 'numeric', month: 'short', year: 'numeric' };
+        document.getElementById('dataAsOfDate').textContent = dt.toLocaleDateString('en-IN', opts);
+        document.getElementById('dataAsOfPill').style.display = 'inline-flex';
+      } catch {
+        // Silently skip — pill stays hidden if /status is unavailable
       }
     }
 
