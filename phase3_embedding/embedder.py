@@ -18,7 +18,6 @@ from typing import Any, Optional
 
 import chromadb
 from chromadb.config import Settings
-from sentence_transformers import SentenceTransformer
 
 logger = logging.getLogger("phase3.embedder")
 
@@ -46,8 +45,13 @@ class MFVectorStore:
         persist_dir: str = DEFAULT_PERSIST_DIR,
         model_name: str = EMBED_MODEL_NAME,
     ) -> None:
-        logger.info("Loading embedding model '%s' …", model_name)
-        self.embed_model = SentenceTransformer(model_name)
+        try:
+            from sentence_transformers import SentenceTransformer
+            logger.info("Loading embedding model '%s' …", model_name)
+            self.embed_model = SentenceTransformer(model_name)
+        except ImportError:
+            logger.warning("sentence_transformers not found. Operating in fallback Chroma embedding mode.")
+            self.embed_model = None
 
         logger.info("Connecting to ChromaDB at '%s' …", persist_dir)
         self.client = chromadb.PersistentClient(
@@ -125,10 +129,14 @@ class MFVectorStore:
         """
         Embed *query_text*, search the collection, return raw ChromaDB result.
         """
-        query_embedding = self.embed_model.encode(
-            query_text, 
-            show_progress_bar=False
-        ).tolist()
+        if self.embed_model:
+            query_embeddings = [self.embed_model.encode(
+                query_text, 
+                show_progress_bar=False
+            ).tolist()]
+            query_kwargs = {"query_embeddings": query_embeddings}
+        else:
+            query_kwargs = {"query_texts": [query_text]}
 
         # Build optional metadata where-filter
         where_filter: Optional[dict] = None
@@ -145,10 +153,10 @@ class MFVectorStore:
             where_filter = {"chunk_type": {"$eq": filter_chunk_type}}
 
         result = self.collection.query(
-            query_embeddings=[query_embedding],
             n_results=min(top_k, self.collection.count()),
             where=where_filter,
             include=["documents", "metadatas", "distances"],
+            **query_kwargs
         )
         return result
 
