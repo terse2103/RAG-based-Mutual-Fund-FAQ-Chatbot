@@ -52,6 +52,7 @@ load_dotenv(os.path.join(_PROJECT_ROOT, ".env"))
 os.environ.setdefault("SENTENCE_TRANSFORMERS_HOME", "/tmp/sentence_transformers")
 os.environ.setdefault("HF_HOME", "/tmp/huggingface")
 os.environ.setdefault("TRANSFORMERS_CACHE", "/tmp/transformers_cache")
+os.environ["HOME"] = "/tmp"  # Force ~ expansion to /tmp for Chroma's ONNX downloads
 
 # ── Serverless environment patches ────────────────────────────────────────────
 # Vercel uses older Amazon Linux 2 environments with sqlite3 < 3.35, which 
