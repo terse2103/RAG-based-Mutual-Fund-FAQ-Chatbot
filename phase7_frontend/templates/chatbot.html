@@ -1156,7 +1156,7 @@
         }
 
         const dt = new Date(ts);
-        const opts = { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' };
+        const opts = { timeZone: 'Asia/Kolkata', day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' };
         const pill = document.getElementById('dataAsOfPill');
         pill.textContent = '📅 Data as of ' + dt.toLocaleString('en-IN', opts);
         pill.style.display = 'inline-flex';
