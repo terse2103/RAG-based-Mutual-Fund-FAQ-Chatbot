@@ -96,8 +96,23 @@ def _init_pipeline() -> RAGChain:
     global _chain, _last_refresh
     with _init_lock:
         if _chain is None:
-            vectorstore_path = os.path.join(_PROJECT_ROOT, VECTORSTORE_DIR)
-            store = MFVectorStore(persist_dir=vectorstore_path)
+            import shutil
+            
+            # ── Vercel read-only filesystem fix ────────────────────────
+            # Vercel's repo directory is read-only. ChromaDB attempts to
+            # write SQLite WAL and lock files, which will crash.
+            # We must copy the vectorstore to the writable /tmp directory.
+            source_vectorstore = os.path.join(_PROJECT_ROOT, VECTORSTORE_DIR)
+            tmp_vectorstore = "/tmp/vectorstore"
+            
+            if not os.path.exists(tmp_vectorstore):
+                logger.info("Copying vectorstore to writable /tmp directory...")
+                shutil.copytree(source_vectorstore, tmp_vectorstore)
+            
+            # Also patch ONNX models cache dir to be safe (Chroma's default ONNX downloader)
+            os.environ.setdefault("chroma_cache_dir", "/tmp/chroma")
+                
+            store = MFVectorStore(persist_dir=tmp_vectorstore)
             gen   = ResponseGenerator()
             _chain = RAGChain(vector_store=store, generate_fn=gen.generate)
             _last_refresh = _load_last_refresh()
@@ -191,9 +206,11 @@ def chat(req: ChatRequest):
         )
 
     # ── Step 2: RAG pipeline ──────────────────────────────────────────────
-    chain = _chain
-    if chain is None:
-        raise HTTPException(status_code=503, detail="Backend not ready — please retry shortly.")
+    try:
+        chain = _init_pipeline()
+    except Exception as exc:
+        logger.error("Failed to init RAG pipeline on chat request: %s", exc, exc_info=True)
+        raise HTTPException(status_code=500, detail=f"Backend init error: {exc}")
 
     try:
         result = chain.run(
