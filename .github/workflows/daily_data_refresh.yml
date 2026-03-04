@@ -1,0 +1,69 @@
+name: Daily Data Refresh
+
+# ──────────────────────────────────────────────────────────────────────────────
+# Runs every day at 10:00 AM IST (04:30 UTC).
+# 1. Checks out the repo with full write access.
+# 2. Sets up Python 3.11 and installs scraping + embedding dependencies.
+# 3. Installs Playwright's Chromium browser binary.
+# 4. Runs master_refresh.py (scrape → chunk → embed into ChromaDB).
+# 5. Commits and pushes the updated data/ folder back to the repo.
+#    → This triggers a Vercel redeploy which picks up the fresh vectorstore.
+# ──────────────────────────────────────────────────────────────────────────────
+
+on:
+  schedule:
+    # 04:30 UTC = 10:00 AM IST (UTC+5:30)
+    - cron: "30 4 * * *"
+
+  # Allow a manual triggered run from the GitHub Actions UI
+  workflow_dispatch:
+
+jobs:
+  refresh:
+    name: Scrape → Chunk → Embed → Push
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      # ── 1. Checkout ──────────────────────────────────────────────────────────
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          # Token with write access so we can push the updated data back
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      # ── 2. Python setup ──────────────────────────────────────────────────────
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      # ── 3. Install core + scraping/embedding dependencies ────────────────────
+      - name: Install Python dependencies
+        run: |
+          pip install --upgrade pip
+          # Install Vercel-optimised base requirements first
+          pip install -r requirements.txt
+          # Then add the extras needed for local scraping & embedding
+          pip install playwright apscheduler "sentence-transformers>=2.2" torch --extra-index-url https://download.pytorch.org/whl/cpu
+
+      # ── 4. Install Playwright browser ─────────────────────────────────────────
+      - name: Install Playwright Chromium
+        run: playwright install chromium --with-deps
+
+      # ── 5. Run the full pipeline ──────────────────────────────────────────────
+      - name: Run master_refresh.py
+        env:
+          GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
+        run: python master_refresh.py
+
+      # ── 6. Commit & push updated data back to GitHub ──────────────────────────
+      - name: Commit and push updated data
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add data/
+          # Only commit if something actually changed
+          git diff --cached --quiet && echo "No data changes, skipping commit." || \
+            git commit -m "chore(data): auto-refresh $(date -u +'%Y-%m-%d %H:%M UTC')"
+          git push origin ${{ github.ref_name }}

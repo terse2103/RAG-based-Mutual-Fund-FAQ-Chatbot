@@ -318,49 +318,7 @@
       color: #374151;
     }
 
-    .refresh-btn {
-      width: 100%;
-      padding: 10px;
-      border: 1px solid #d1d5db;
-      border-radius: 6px;
-      background: #fff;
-      font-size: 12px;
-      font-weight: 600;
-      color: #374151;
-      cursor: pointer;
-      transition: all 0.15s;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 6px;
-    }
 
-    .refresh-btn:hover {
-      background: #f9fafb;
-      border-color: #9ca3af;
-    }
-
-    .refresh-status {
-      font-size: 11px;
-      color: #16a34a;
-      text-align: center;
-      margin-top: 4px;
-      height: 16px;
-      font-weight: 500;
-    }
-
-    .last-updated-label {
-      font-size: 11px;
-      color: #6b7280;
-      text-align: center;
-      margin-top: 6px;
-      line-height: 1.4;
-    }
-
-    .last-updated-label span {
-      color: #374151;
-      font-weight: 500;
-    }
 
     /* ─── Sidebar ────────────────────────────────────────── */
     .sidebar-section-title {
@@ -1007,18 +965,6 @@
 
       <div class="sidebar-divider"></div>
 
-      <!-- Refresh Data -->
-      <div>
-        <button class="refresh-btn" id="refreshBtn" onclick="refreshData()">
-          🔄 Refresh Data
-        </button>
-        <div id="refreshStatus" class="refresh-status"></div>
-        <div class="last-updated-label" id="lastUpdatedLabel">Data last updated: <span
-            id="lastUpdatedTime">Loading…</span></div>
-      </div>
-
-      <div class="sidebar-divider"></div>
-
       <!-- Clear btn -->
       <button onclick="clearChat()"
         style="width:100%;padding:8px;border:1px solid #e5e7eb;border-radius:6px;background:#fff;color:#6b7280;font-size:12px;font-weight:500;cursor:pointer;transition:all .15s; margin-top: auto;"
@@ -1173,7 +1119,6 @@
       renderTips();
       await checkHealth();
       await loadFunds();
-      await loadStatus();          // populate "Data last updated" label
       setInterval(checkHealth, 30000);
     }
 
