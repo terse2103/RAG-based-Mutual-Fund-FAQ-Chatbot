@@ -1291,7 +1291,20 @@
       status.style.color = '#1d6be5';
       try {
         const resp = await fetch(`${API_BASE}/refresh`, { method: 'POST' });
-        if (!resp.ok) throw new Error('Refresh failed');
+
+        if (!resp.ok) {
+          const data = await resp.json().catch(() => ({}));
+          // Handle Vercel proxy returning 503 cleanly
+          if (resp.status === 503 && data.message) {
+            alert("Vercel Runtime Info:\n\n" + data.message);
+            status.textContent = '⚠️ Disabled on Serverless';
+            status.style.color = '#d97706';
+            setTimeout(() => { status.textContent = ''; }, 4000);
+            return;
+          }
+          throw new Error('Refresh failed');
+        }
+
         const data = await resp.json();
         status.textContent = '✅ Data refreshed!';
         status.style.color = '#16a34a';
@@ -1301,6 +1314,7 @@
       } catch (e) {
         status.textContent = '❌ Refresh failed.';
         status.style.color = '#dc2626';
+        setTimeout(() => { status.textContent = ''; }, 4000);
       } finally {
         btn.disabled = false;
       }
