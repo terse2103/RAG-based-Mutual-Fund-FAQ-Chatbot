@@ -984,8 +984,7 @@
           <div class="fund-header-name">Nippon India Mutual Fund FAQ Assistant</div>
           <div class="fund-header-pills">
             <span class="fund-pill">Powered by INDMoney</span>
-            <span class="fund-pill" id="dataAsOfPill" style="display:none;white-space:nowrap;">📅 Data as of <span
-                id="dataAsOfDate"></span></span>
+            <span class="fund-pill" id="dataAsOfPill" style="display:none;"></span>
           </div>
         </div>
       </div>
@@ -1150,8 +1149,9 @@
         if (!ts || ts === 'Never') return;
         const dt = new Date(ts);
         const opts = { day: 'numeric', month: 'short', year: 'numeric' };
-        document.getElementById('dataAsOfDate').textContent = ' ' + dt.toLocaleDateString('en-IN', opts);
-        document.getElementById('dataAsOfPill').style.display = 'inline-flex';
+        const pill = document.getElementById('dataAsOfPill');
+        pill.textContent = '📅 Data as of ' + dt.toLocaleDateString('en-IN', opts);
+        pill.style.display = 'inline-flex';
       } catch {
         // Silently skip — pill stays hidden if /status is unavailable
       }
