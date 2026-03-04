@@ -17,7 +17,7 @@ import asyncio
 import json
 import logging
 import sys
-from datetime import date, datetime
+from datetime import date, datetime, timezone
 from pathlib import Path
 
 # ── Project root ──────────────────────────────────────────────────────────────
@@ -79,9 +79,9 @@ def _save_metadata(success: bool) -> None:
     try:
         _METADATA_PATH.parent.mkdir(parents=True, exist_ok=True)
         payload = {
-            "last_refresh": datetime.now().isoformat(),
+            "last_refresh": datetime.now(timezone.utc).isoformat(),
             "last_status": {"success": success},
-            "updated_at": datetime.now().isoformat(),
+            "updated_at": datetime.now(timezone.utc).isoformat(),
         }
         _METADATA_PATH.write_text(
             json.dumps(payload, indent=2, ensure_ascii=False),
@@ -166,7 +166,7 @@ async def run_refresh_pipeline() -> bool:
         with open(summary_file, "w", encoding="utf-8") as f:
             json.dump({
                 "total_chunks": len(all_chunks),
-                "timestamp": datetime.now().isoformat()
+                "timestamp": datetime.now(timezone.utc).isoformat()
             }, f, indent=2)
 
         logger.info("  ✅ Total chunks created and persisted: %d", len(all_chunks))
