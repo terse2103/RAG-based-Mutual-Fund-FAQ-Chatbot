@@ -1,15 +1,7 @@
 {
-  "last_refresh": "2026-03-04T12:58:44.101885",
+  "last_refresh": "2026-03-04T16:20:36.897107",
   "last_status": {
-    "success": [
-      "nippon_elss_tax_saver",
-      "nippon_nifty_auto_index",
-      "nippon_short_duration",
-      "nippon_crisil_ibx_aaa",
-      "nippon_silver_etf_fof",
-      "nippon_balanced_advantage"
-    ],
-    "failed": []
+    "success": true
   },
-  "updated_at": "2026-03-04T12:58:44.102250"
+  "updated_at": "2026-03-04T16:20:36.897117"
 }
