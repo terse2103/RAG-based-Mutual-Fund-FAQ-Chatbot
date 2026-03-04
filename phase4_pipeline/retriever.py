@@ -132,11 +132,17 @@ class RAGRetriever:
             where_filter = {"fund_key": {"$in": fund_keys}}
         # else: no fund filter at all (all-fund global search)
 
+        if getattr(self.vector_store, "embed_model", None):
+            query_embeddings = [self.vector_store.embed_model.encode(query, show_progress_bar=False).tolist()]
+            query_kwargs = {"query_embeddings": query_embeddings}
+        else:
+            query_kwargs = {"query_texts": [query]}
+
         raw = self.vector_store.collection.query(
-            query_embeddings=[self.vector_store.embed_model.encode(query).tolist()],
             n_results=self.top_k,
             where=where_filter,
             include=["documents", "metadatas", "distances"],
+            **query_kwargs
         )
 
         # Step 3 — Apply relevance threshold
