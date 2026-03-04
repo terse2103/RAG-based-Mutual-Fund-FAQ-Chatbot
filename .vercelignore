@@ -9,6 +9,11 @@ __pycache__/
 *.pyd
 .pytest_cache/
 
+# Virtual Environments
+.venv/
+venv/
+env/
+
 # Local development logs (not needed in production)
 logs/
 server_startup.log

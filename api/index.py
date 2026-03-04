@@ -53,6 +53,16 @@ os.environ.setdefault("SENTENCE_TRANSFORMERS_HOME", "/tmp/sentence_transformers"
 os.environ.setdefault("HF_HOME", "/tmp/huggingface")
 os.environ.setdefault("TRANSFORMERS_CACHE", "/tmp/transformers_cache")
 
+# ── Serverless environment patches ────────────────────────────────────────────
+# Vercel uses older Amazon Linux 2 environments with sqlite3 < 3.35, which 
+# ChromaDB rejects. This overrides it with the newer pysqlite3-binary.
+try:
+    __import__('pysqlite3')
+    import sys
+    sys.modules['sqlite3'] = sys.modules.pop('pysqlite3')
+except ImportError:
+    pass
+
 # ── Phase imports ─────────────────────────────────────────────────────────────
 from phase3_embedding.embedder import MFVectorStore
 from phase4_pipeline.rag_chain import RAGChain
