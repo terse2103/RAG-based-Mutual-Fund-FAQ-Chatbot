@@ -1148,9 +1148,9 @@
         const ts = data.last_refresh;
         if (!ts || ts === 'Never') return;
         const dt = new Date(ts);
-        const opts = { day: 'numeric', month: 'short', year: 'numeric' };
+        const opts = { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' };
         const pill = document.getElementById('dataAsOfPill');
-        pill.textContent = '📅 Data as of ' + dt.toLocaleDateString('en-IN', opts);
+        pill.textContent = '📅 Data as of ' + dt.toLocaleString('en-IN', opts);
         pill.style.display = 'inline-flex';
       } catch {
         // Silently skip — pill stays hidden if /status is unavailable
