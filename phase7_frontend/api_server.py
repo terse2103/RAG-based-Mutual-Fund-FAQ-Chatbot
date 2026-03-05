@@ -79,7 +79,18 @@ def _init_pipeline() -> tuple[RAGChain, DailyRefreshScheduler]:
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     try:
-        _init_pipeline()
+        chain, scheduler = _init_pipeline()
+        # Run startup refresh in a background thread so the server starts
+        # immediately without blocking — if data is stale (>24 h) it refreshes.
+        def _startup_refresh():
+            try:
+                scheduler.maybe_refresh_on_startup(max_age_hours=24)
+            except Exception as exc:
+                logger.warning("Startup refresh failed (non-fatal): %s", exc)
+
+        t = threading.Thread(target=_startup_refresh, daemon=True, name="startup-refresh")
+        t.start()
+        logger.info("Startup refresh check initiated in background thread ✓")
     except Exception as exc:
         logger.error("Failed to init RAG pipeline: %s", exc, exc_info=True)
     yield

@@ -8,6 +8,10 @@ name: Daily Data Refresh
 # 4. Runs master_refresh.py (scrape → chunk → embed into ChromaDB).
 # 5. Commits and pushes the updated data/ folder back to the repo.
 #    → This triggers a Vercel redeploy which picks up the fresh vectorstore.
+#
+# NOTE: GitHub disables scheduled workflows on repos with no activity for
+# 60 days. To keep it active, the workflow pushes updated data/ back to the
+# repo on every successful run — this counts as activity and resets the clock.
 # ──────────────────────────────────────────────────────────────────────────────
 
 on:
@@ -22,7 +26,7 @@ jobs:
   refresh:
     name: Scrape → Chunk → Embed → Push
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 30
     permissions:
       contents: write
 
@@ -33,12 +37,14 @@ jobs:
         with:
           # Token with write access so we can push the updated data back
           token: ${{ secrets.GITHUB_TOKEN }}
+          fetch-depth: 0
 
       # ── 2. Python setup ──────────────────────────────────────────────────────
       - name: Set up Python 3.11
         uses: actions/setup-python@v5
         with:
           python-version: "3.11"
+          cache: "pip"
 
       # ── 3. Install core + scraping/embedding dependencies ────────────────────
       - name: Install Python dependencies
@@ -60,12 +66,28 @@ jobs:
         run: python master_refresh.py
 
       # ── 6. Commit & push updated data back to GitHub ──────────────────────────
+      # This step also keeps the workflow "active" in GitHub's eyes, which
+      # prevents GitHub from auto-disabling the scheduled trigger after 60 days.
       - name: Commit and push updated data
         run: |
           git config user.name  "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add data/
           # Only commit if something actually changed
-          git diff --cached --quiet && echo "No data changes, skipping commit." || \
+          if git diff --cached --quiet; then
+            echo "No data changes detected — skipping commit."
+          else
             git commit -m "chore(data): auto-refresh $(date -u +'%Y-%m-%d %H:%M UTC')"
-          git push origin ${{ github.ref_name }}
+            git push origin ${{ github.ref_name }}
+            echo "✅ Updated data pushed to repository."
+          fi
+
+      # ── 7. Log refresh completion ─────────────────────────────────────────────
+      - name: Print refresh summary
+        if: always()
+        run: |
+          echo "=============================="
+          echo "  Daily Refresh: ${{ job.status }}"
+          echo "  Time (UTC): $(date -u)"
+          echo "  Time (IST): $(TZ='Asia/Kolkata' date)"
+          echo "=============================="
