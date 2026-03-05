@@ -1,7 +1,7 @@
 """
 run_refresh.py — Standalone Daily Data Refresh
 ===============================================
-This script is designed to be called by the Windows Task Scheduler at
+This script is designed to be called by a GitHub Action at
 10:00 AM IST every day. It runs the complete data refresh pipeline
 (scrape → chunk → embed into ChromaDB) independently of whether the
 FastAPI server is running.
@@ -9,10 +9,10 @@ FastAPI server is running.
 Usage (manual):
     python run_refresh.py
 
-Scheduled via Windows Task Scheduler (set up by setup_task_scheduler.bat):
-    Trigger  : Daily at 10:00 AM
-    Action   : python <project_root>\\run_refresh.py
-    Start in : <project_root>
+Scheduled via GitHub Action (.github/workflows/daily_refresh.yml):
+    Trigger  : Daily at 10:00 AM IST (Cron: 30 4 * * *)
+    Action   : python run_refresh.py
+    Persist  : Commits updated data/ to repository.
 """
 
 from __future__ import annotations
@@ -55,7 +55,7 @@ logger = logging.getLogger("run_refresh")
 def main() -> int:
     """Run the full refresh pipeline. Returns 0 on success, 1 on failure."""
     logger.info("=" * 60)
-    logger.info("  Daily Refresh — Triggered by Windows Task Scheduler")
+    logger.info("  Daily Refresh — Triggered via GitHub Action")
     logger.info("  Project root : %s", PROJECT_ROOT)
     logger.info("=" * 60)
 

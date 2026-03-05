@@ -78,6 +78,7 @@ jobs:
             echo "No data changes detected — skipping commit."
           else
             git commit -m "chore(data): auto-refresh $(date -u +'%Y-%m-%d %H:%M UTC')"
+            git pull --rebase origin ${{ github.ref_name }}
             git push origin ${{ github.ref_name }}
             echo "✅ Updated data pushed to repository."
           fi

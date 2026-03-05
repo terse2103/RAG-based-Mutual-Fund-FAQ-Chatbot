@@ -11,18 +11,18 @@ The scheduler runs on APScheduler's BackgroundScheduler (so it can coexist
 with a long-lived Streamlit/FastAPI process) with a CronTrigger firing every
 day at 10:00 AM IST (Asia/Kolkata).
 
-Three entry points are supported:
-  • Automatic daily trigger — via APScheduler cron job
-  • Manual/on-demand trigger  — via ``trigger_manual_refresh()``
+The scheduler logic can be triggered in three ways:
+  • Automatic daily trigger — via GitHub Actions (.github/workflows/daily_refresh.yml)
+  • Manual/on-demand trigger  — via ``trigger_manual_refresh()`` (or UI "Refresh Data")
   • Startup trigger            — via ``maybe_refresh_on_startup()``
     (runs immediately if data is older than ``max_age_hours``)
 
-Usage (standalone process):
-    python -m phase9_scheduler.run_phase9
+Usage (standalone/CLI for GitHub Actions/Task Scheduler):
+    python run_refresh.py
 
-Usage (embedded in Streamlit app.py):
+Usage (embedded in app.py):
     from phase9_scheduler.scheduler import DailyRefreshScheduler
-    scheduler = DailyRefreshScheduler(vector_store, chunker)
+    scheduler = DailyRefreshScheduler()
     scheduler.start()
     scheduler.maybe_refresh_on_startup()
 """

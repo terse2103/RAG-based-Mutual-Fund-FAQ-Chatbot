@@ -36,7 +36,7 @@ graph TB
     end
 
     subgraph "Scheduler Layer"
-        S["APScheduler<br/>(Daily 10:00 AM)"] -.->|Trigger| B
+        S["GitHub Action<br/>(Daily 10:00 AM IST)"] -.->|Trigger| B
     end
 
     subgraph "Query Layer"
@@ -74,7 +74,7 @@ graph TB
 | **Concise** | Hard ≤3 sentence limit enforced in prompt + post-processing |
 | **Freshness Stamp** | Displayed in the UI source card: `Last updated from sources: <date>` |
 | **Auto-Purge** | Scheduler deletes previous days' files before every re-scrape |
-| **Auto-Refresh** | Daily scheduler re-scrapes all sources at 10:00 AM IST |
+| **Auto-Refresh** | Daily scheduler re-scrapes all sources at 10:00 AM IST via GitHub Actions |
 
 ---
 
@@ -98,7 +98,7 @@ flowchart LR
         E --> F["Save to<br/>data/raw/"]
     end
 
-    G["APScheduler<br/>(Daily 10:00 AM)"] -.->|Trigger| B
+    G["GitHub Action<br/>(Daily 10:00 AM IST)"] -.->|Trigger| B
 ```
 
 ### 1.3 Key Components
@@ -676,18 +676,18 @@ logging.basicConfig(
 Automatically re-scrape all 6 allowed source pages **daily at 10:00 AM IST**, re-process chunks, re-embed into ChromaDB, and log the refresh status — ensuring the chatbot always serves fresh data.
 
 > [!IMPORTANT]
-> The scheduler implements a mandatory `_purge_previous_day_data()` logic before every re-scrape. This orchestrates an end-to-end data pipeline reset. It runs automatically, but the full pipeline can also be manually triggered via the frontend UI's **"Refresh Data"** button.
+> The scheduler implements a mandatory `_purge_previous_day_data()` logic before every re-scrape. This orchestrates an end-to-end data pipeline reset. It runs automatically via **GitHub Actions** (at 10:00 AM IST), but the full pipeline can also be manually triggered via the frontend UI's **"Refresh Data"** button (in local environments).
 
 ### 9.2 Architecture
 
 ```mermaid
 flowchart TB
     subgraph "Scheduler Module"
-        A["APScheduler<br/>(CronTrigger: 10:00 AM daily)"] -->|Trigger| B["Playwright Scraper<br/>(scrape_all)"]
+        A["GitHub Action<br/>(Cron: 10:00 AM IST daily)"] -->|Trigger| B["Playwright Scraper<br/>(run_refresh.py)"]
         B -->|Raw JSON| C["Chunker<br/>(process all funds)"]
         C -->|Chunks| D["Embedder<br/>(upsert to ChromaDB)"]
         D --> E["Log Results<br/>(success/failure per fund)"]
-        E --> F["Update scrape_metadata.json"]
+        E --> F["Update & Push Repo<br/>(Updated data/ folder)"]
     end
 
     G["Manual Trigger<br/>(POST /refresh endpoint)"] -.->|On-demand| B
@@ -705,10 +705,8 @@ import asyncio
 from apscheduler.schedulers.background import BackgroundScheduler
 from apscheduler.triggers.cron import CronTrigger
 
-class DailyRefreshScheduler:
-    """Manages Phase 1-3 automation via daily 10 AM cron job."""
-
     def __init__(self, vector_store=None, chunker=None):
+        # Local APScheduler for runtime refresh if needed
         self.scheduler = BackgroundScheduler(timezone="Asia/Kolkata")
         
     def _run_refresh_pipeline(self):

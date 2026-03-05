@@ -17,7 +17,7 @@ This project focuses on the Nippon India AMC (Asset Management Company) and cove
 - **Interactive UI & Sidebar**: A clean vanilla HTML/JS interface featuring a sidebar with **Equity, Debt, and Hybrid filter buttons**, a fund selection dropdown, and a custom collapse icon (`>>>`).
 - **Dynamic Context Scoping**: The chatbot tightly restricts its context and limits its answers specifically to the category or mutual fund selected in the sidebar.
 - **Refined Chat Experience**: Chat text responses are cleaned up, separating source links into clickable UI elements. Suggests up to 4 quick-start questions.
-- **Full Pipeline Orchestration**: The data is automatically refreshed daily at 10:00 AM IST. Users can also trigger an end-to-end pipeline run (which purges old data and re-scrapes) manually using the **"Refresh Data"** button in the sidebar (which displays the latest successful sync date).
+- **Full Pipeline Orchestration**: The data is automatically refreshed daily at 10:00 AM IST. This is scheduled via a **GitHub Action** that re-scrapes pages, generates embeddings, and commits the updated data back to the repository. Users can also trigger an end-to-end pipeline run manually using the **"Refresh Data"** button in the sidebar (which displays the latest successful sync date).
 
 ## Setup Steps
 
@@ -71,7 +71,7 @@ Due to Vercel's strict stateless environment (500MB function size limit, read-on
 
 ## Known Limitations
 
-- **Data Delay:** Scraping and processing are done in batches (daily scheduler at 10:00 AM IST), so real-time price changes (like minute-by-minute NAV) might not be instantly reflected. You can manually run a fresh ingestion workflow via the "Refresh Data" UI button (local environment only).
+- **Data Delay:** Scraping and processing are done in batches (daily scheduler at 10:00 AM IST via GitHub Actions), so real-time price changes (like minute-by-minute NAV) might not be instantly reflected. You can manually run a fresh ingestion workflow via the "Refresh Data" UI button (local environment only).
 - **Limited Scope:** The chatbot only answers based on the 6 predefined Nippon India mutual fund links. It will reject queries outside this scope.
 - **No Financial Advice:** The chatbot enforces safety constraints, strictly preventing it from offering investment advice, recommendations, or hypothetical return calculations.
 - **Dynamic Content:** Heavy dynamic content on INDMoney requires JavaScript rendering (handled via Playwright); if page structures alter significantly, the scraper selectors may require updates.
